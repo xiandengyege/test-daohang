@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>奇趣导航 - 发现全球好玩网站</title>
+    <title>X 乐园</title>
     <!-- 引入 Tailwind CSS 构建现代样式 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Vue 3 处理数据渲染和交互 -->
@@ -24,7 +24,7 @@
 <aside class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-20 flex flex-col hidden md:flex">
     <div class="p-6 border-b border-gray-100 flex items-center gap-3">
         <i class="fa-solid fa-rocket text-indigo-500 text-2xl"></i>
-        <h1 class="text-xl font-bold text-gray-800">奇趣导航</h1>
+        <h1 class="text-xl font-bold text-gray-800">X导航</h1>
     </div>
     <nav class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-1">
         <a v-for="(category, index) in filteredCategories" :key="index" :href="'#cat-' + index"
