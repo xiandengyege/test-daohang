@@ -26,29 +26,27 @@
 <body id="app">
 <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div>
 
-<!-- 左侧分类导航（可保留） -->
-<aside class="fixed inset-y-0 left-4 top-4 bottom-4 w-64 glass-panel rounded-3xl z-50 flex flex-col hidden md:flex overflow-hidden">
-  <div class="p-8 flex items-center gap-3">
-    <i class="fa-regular fa-circle-dot text-3xl bg-gradient-to-tr from-violet-500 to-fuchsia-500 text-transparent bg-clip-text inline-block"></i>
-    <h1 class="text-2xl font-black bg-gradient-to-r from-violet-600 to-fuchsia-600 text-transparent bg-clip-text">X 乐园</h1>
+<!-- 左侧分类导航（紧凑版） -->
+<aside class="fixed inset-y-0 left-4 top-4 bottom-4 w-56 glass-panel rounded-3xl z-50 flex flex-col hidden md:flex overflow-hidden">
+  <div class="p-6 flex items-center gap-2">
+    <i class="fa-regular fa-circle-dot text-2xl bg-gradient-to-tr from-violet-500 to-fuchsia-500 text-transparent bg-clip-text inline-block"></i>
+    <h1 class="text-xl font-black bg-gradient-to-r from-violet-600 to-fuchsia-600 text-transparent bg-clip-text">X 乐园</h1>
   </div>
-  <nav class="flex-1 overflow-y-auto px-4 pb-6 space-y-2">
-    <a v-for="(cat, idx) in filteredCategories" :key="idx" :href="'#cat-' + idx"
-       class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 rounded-2xl hover:bg-white/60 hover:text-gray-900 transition group">
-      <div :class="['w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform', cat.gradient]">
-        <i :class="cat.icon + ' text-sm'"></i>
-      </div>
-      {{ cat.name }}
-      <span class="ml-auto bg-white/80 text-gray-500 py-1 px-2.5 rounded-full text-xs">
-        {{ cat.siteCount }}
+  <nav class="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
+    <a v-for="(cat, idx) in rawCategories" :key="idx" :href="'#cat-' + idx"
+       class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 rounded-xl hover:bg-white/60 hover:text-gray-900 transition group">
+      <i :class="cat.icon + ' text-xs w-4 h-4 flex items-center justify-center'" style="color: var(--cat-color)" :style="{ color: getCatColor(cat) }"></i>
+      <span class="truncate flex-1">{{ cat.name }}</span>
+      <span class="bg-white/80 text-gray-500 py-0.5 px-1.5 rounded-full text-xs tabular-nums">
+        {{ cat.subcategories.reduce((a,s)=>a+s.sites.length,0) }}
       </span>
     </a>
   </nav>
 </aside>
 
-<main class="md:ml-[19rem] min-h-screen flex flex-col p-4">
-  <!-- 顶部搜索栏（仅保留搜索框） -->
-  <header class="search-header glass-panel rounded-3xl px-6 py-4 flex items-center justify-center mb-6">
+<main class="md:ml-[15rem] min-h-screen flex flex-col p-4">
+  <!-- 顶部搜索栏 -->
+  <header class="search-header glass-panel rounded-3xl px-6 py-3 flex items-center justify-center mb-6">
     <div class="relative w-64 md:w-96">
       <input v-model="searchQuery" type="text" placeholder="探索 X 乐园..."
              class="w-full pl-10 pr-4 py-2 glass-panel rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-violet-300">
@@ -58,12 +56,12 @@
 
   <!-- 站点区域 -->
   <div class="flex-1">
-    <div v-if="filteredCategories.length===0" class="text-center py-32 text-gray-400">
+    <div v-if="rawCategories.length===0" class="text-center py-32 text-gray-400">
       <i class="fa-regular fa-face-frown text-6xl mb-6 opacity-50"></i>
-      <p>这片星系空空如也，换个词探索吧</p>
+      <p>数据加载失败</p>
     </div>
 
-    <div v-for="(cat, catIdx) in filteredCategories" :key="catIdx" :id="'cat-'+catIdx" class="mb-16 scroll-mt-28">
+    <div v-for="(cat, catIdx) in rawCategories" :key="catIdx" :id="'cat-'+catIdx" class="mb-16 scroll-mt-28">
       <h2 class="text-2xl font-extrabold mb-4 flex items-center gap-3 text-gray-800 ml-2">
         <span :class="['w-2 h-8 rounded-full', cat.gradient]"></span>
         <span class="bg-clip-text text-transparent" :class="cat.gradient">{{ cat.name }}</span>
@@ -75,7 +73,7 @@
       </div>
 
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4 mt-6">
-        <a v-for="site in currentSubItems(catIdx)" :key="site.url" :href="site.url" target="_blank"
+        <a v-for="site in currentSubItemsFiltered(catIdx)" :key="site.url" :href="site.url" target="_blank"
            class="glass-card rounded-2xl p-4 flex flex-col group" :title="site.desc || ''">
           <div class="flex items-center gap-2 mb-2">
             <div class="site-icon-circle rounded-full flex items-center justify-center font-bold text-white"
@@ -102,26 +100,6 @@
         searchQuery: ''
       }
     },
-    computed: {
-      filteredCategories() {
-        if (!this.searchQuery) {
-          return this.rawCategories.map(cat => ({ 
-            ...cat, 
-            siteCount: cat.subcategories.reduce((sum, sub) => sum + sub.sites.length, 0)
-          }));
-        }
-        const q = this.searchQuery.toLowerCase();
-        return this.rawCategories.map(cat => {
-          const subs = cat.subcategories.map(sub => ({
-            ...sub,
-            sites: sub.sites.filter(site =>
-              site.name.toLowerCase().includes(q) || (site.desc && site.desc.toLowerCase().includes(q))
-            )
-          })).filter(sub => sub.sites.length > 0);
-          return { ...cat, subcategories: subs, siteCount: subs.reduce((sum, sub) => sum + sub.sites.length, 0) };
-        }).filter(cat => cat.subcategories.length > 0);
-      }
-    },
     methods: {
       getInitial(name) { return name.charAt(0).toUpperCase(); },
       getColorFromName(name) {
@@ -132,17 +110,70 @@
         return `hsl(${hash % 360}, 65%, 55%)`;
       },
       selectSub(catIdx, subIdx) { this.activeSubMap[catIdx] = subIdx; },
-      currentSubItems(catIdx) {
-        const cat = this.filteredCategories[catIdx];
+      currentSubItemsFiltered(catIdx) {
+        const cat = this.rawCategories[catIdx];
         if (!cat) return [];
         const sel = this.activeSubMap[catIdx] ?? -1;
-        if (sel === -1) return cat.subcategories.reduce((arr, s) => arr.concat(s.sites || []), []);
-        return cat.subcategories[sel]?.sites || [];
+        let sites = [];
+        if (sel === -1) {
+          sites = cat.subcategories.reduce((arr, s) => arr.concat(s.sites || []), []);
+        } else {
+          sites = cat.subcategories[sel]?.sites || [];
+        }
+        if (!this.searchQuery) return sites;
+        const q = this.searchQuery.toLowerCase();
+        return sites.filter(site => site.name.toLowerCase().includes(q) || (site.desc && site.desc.toLowerCase().includes(q)));
+      },
+      // 从渐变类中提取一个代表色用于图标（简单取第一个颜色）
+      getCatColor(cat) {
+        // 例如 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500
+        const match = cat.gradient.match(/from-([a-z]+-\d+)/);
+        if (match) {
+          const color = match[1]; // pink-500
+          const map = {
+            'pink-500': '#ec4899',
+            'red-500': '#ef4444',
+            'yellow-500': '#eab308',
+            'blue-600': '#2563eb',
+            'indigo-500': '#6366f1',
+            'purple-600': '#9333ea',
+            'teal-400': '#2dd4bf',
+            'emerald-500': '#10b981',
+            'green-500': '#22c55e',
+            'rose-400': '#fb7185',
+            'orange-400': '#fb923c',
+            'cyan-500': '#06b6d4',
+            'slate-600': '#475569',
+            'gray-700': '#374151',
+            'zinc-800': '#27272a',
+            'lime-400': '#a3e635',
+            'fuchsia-500': '#d946ef',
+            'purple-500': '#a855f7',
+            'violet-600': '#7c3aed',
+            // 可自行补充更多
+          };
+          if (map[color]) return map[color];
+        }
+        return '#6366f1'; // 默认 indigo-500
       }
     },
     mounted() {
       if (typeof SITE_DATA !== 'undefined') {
-        this.rawCategories = SITE_DATA;
+        // 重新排序：将“学习科普”“极客代码”“创意设计”提前
+        const priorityNames = ['📚 学习科普', '💻 极客代码', '🎨 创意设计'];
+        let sorted = [];
+        const remaining = [];
+        const cats = [...SITE_DATA];
+        // 先按顺序提取优先分类
+        priorityNames.forEach(name => {
+          const idx = cats.findIndex(c => c.name === name);
+          if (idx !== -1) {
+            sorted.push(cats[idx]);
+            cats.splice(idx, 1);
+          }
+        });
+        this.rawCategories = sorted.concat(cats);
+        // 初始化子分类选择
         this.rawCategories.forEach((_, idx) => { this.activeSubMap[idx] = -1; });
       }
     }
