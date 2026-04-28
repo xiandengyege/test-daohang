@@ -1,269 +1,395 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>图欧风格导航 - 探索无限</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    html { scroll-behavior: smooth; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    body { background-color: #f4f6f8; color: #333; overflow-x: hidden; }
-    /* 隐藏滚动条但保留滚动功能 */
-    .scrollbar-hide::-webkit-scrollbar { display: none; }
-    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-    /* 侧边栏平滑过渡 */
-    .sidebar-transition { transition: transform 0.3s ease-in-out; }
-    /* 卡片悬浮动画 */
-    .nav-card { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
-    .nav-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.1); border-color: #e2e8f0; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X 乐园 - 探索无限</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js">
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        html {
+            scroll-behavior: smooth;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f4f6f8;
+            color: #333;
+            overflow-x: hidden;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        .nav-card {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+        }
+        .nav-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.15);
+            border-color: #e2e8f0;
+        }
+        .site-icon-wrapper {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.75rem;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f1f5f9;
+            overflow: hidden;
+        }
+        .nav-card:hover .site-icon-wrapper {
+            transform: scale(1.05);
+        }
+        .site-icon-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 0.75rem;
+        }
+        .site-icon-wrapper .fallback-icon {
+            font-size: 1.2rem;
+            color: #94a3b8;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 1rem;
+        }
+        .card-grid > * {
+            min-width: 0;
+        }
+        @media (max-width: 1400px) {
+            .card-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 1024px) {
+            .card-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 480px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .card-wrapper {
+            position: relative;
+            z-index: 1;
+            transition: z-index 0s;
+        }
+        .card-wrapper:hover {
+            z-index: 50;
+        }
+        .card-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 8px);
+            transform: translateX(-50%);
+            background: rgba(30, 41, 59, 0.95);
+            color: #f1f5f9;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            white-space: normal;
+            word-break: break-all;
+            max-width: calc(10em + 1.5rem);
+            width: max-content;
+            text-align: center;
+            z-index: 9999;
+            pointer-events: none;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .card-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(30, 41, 59, 0.95) transparent transparent transparent;
+        }
+        .card-wrapper:hover .card-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
 </head>
 <body id="app" class="flex h-screen overflow-hidden">
 
-  <!-- 移动端遮罩层 -->
-  <div v-if="isMobileOpen" @click="isMobileOpen = false" class="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"></div>
+    <div v-if="isMobileOpen" @click="isMobileOpen = false" class="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"></div>
 
-  <!-- 左侧边栏 -->
-  <aside :class="isMobileOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed md:static inset-y-0 left-0 w-64 bg-white shadow-xl md:shadow-sm border-r border-gray-200 z-50 flex flex-col sidebar-transition md:translate-x-0">
-    <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100 shrink-0">
-      <div class="flex items-center gap-2 text-indigo-600">
-        <i class="fa-solid fa-compass text-2xl"></i>
-        <span class="font-bold text-lg tracking-wide text-gray-800">图欧资源导航</span>
-      </div>
-      <button @click="isMobileOpen = false" class="md:hidden text-gray-500 hover:text-gray-800">
-        <i class="fa-solid fa-times text-xl"></i>
-      </button>
-    </div>
-    
-    <div class="flex-1 overflow-y-auto py-4 scrollbar-hide">
-      <ul class="space-y-1">
-        <li v-for="(cat, idx) in categories" :key="idx" class="px-3">
-          <a :href="'#cat-' + idx" @click="isMobileOpen = false"
-             :class="activeCat === idx ? 'bg-indigo-50 text-indigo-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600'"
-             class="flex items-center px-3 py-2.5 rounded-lg transition-colors group">
-            <i :class="cat.icon" class="w-6 text-center text-sm opacity-70 group-hover:opacity-100 transition-opacity"
-               :class="activeCat === idx ? 'opacity-100 text-indigo-600' : ''"></i>
-            <span class="ml-2 text-sm">{{ cat.name }}</span>
-            <span class="ml-auto text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-500 transition-colors"
-                  :class="activeCat === idx ? 'bg-indigo-100 text-indigo-500' : ''">
-              {{ cat.siteCount }}
-            </span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </aside>
-
-  <!-- 右侧主体内容 -->
-  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-    
-    <!-- 顶部导航条 -->
-    <header class="h-16 bg-white shadow-sm flex items-center px-4 md:px-8 z-30 shrink-0 sticky top-0">
-      <button @click="isMobileOpen = true" class="md:hidden text-gray-600 mr-4 hover:text-indigo-600 transition-colors">
-        <i class="fa-solid fa-bars text-xl"></i>
-      </button>
-      <div class="flex-1 max-w-2xl relative">
-        <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input v-model="searchQuery" type="text" placeholder="探索海量资源、工具、教程..." 
-               class="w-full bg-gray-100/80 border border-transparent focus:bg-white focus:border-indigo-300 rounded-full py-2 pl-11 pr-4 text-sm outline-none transition-all shadow-inner placeholder-gray-400">
-      </div>
-    </header>
-
-    <!-- 站点内容展示区 -->
-    <main class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth" @scroll="handleScroll" ref="mainContent">
-      
-      <div v-if="filteredCategories.length === 0" class="flex flex-col items-center justify-center h-full text-gray-400">
-        <i class="fa-solid fa-box-open text-6xl mb-4 text-gray-300"></i>
-        <p class="text-lg">未找到匹配的资源，请换个关键词试试</p>
-      </div>
-
-      <div v-for="(cat, catIdx) in filteredCategories" :key="catIdx" :id="'cat-'+catIdx" class="mb-14 scroll-mt-20">
-        <!-- 大分类标题 -->
-        <div class="flex items-center mb-6 pl-1">
-          <i :class="cat.icon" class="text-xl text-indigo-600 mr-3"></i>
-          <h2 class="text-xl font-bold text-gray-800">{{ cat.name }}</h2>
+    <aside :class="isMobileOpen ? 'translate-x-0' : '-translate-x-full'"
+           class="fixed md:static inset-y-0 left-0 w-64 bg-white shadow-xl md:shadow-sm border-r border-gray-200 z-50 flex flex-col sidebar-transition md:translate-x-0">
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100 shrink-0">
+            <div class="flex items-center gap-2 text-indigo-600">
+                <i class="fa-solid fa-compass text-2xl"></i>
+                <span class="font-bold text-lg tracking-wide text-gray-800">X 乐园</span>
+            </div>
+            <button @click="isMobileOpen = false" class="md:hidden text-gray-500 hover:text-gray-800">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
         </div>
+        <div class="flex-1 overflow-y-auto py-4 scrollbar-hide">
+            <ul class="space-y-1">
+                <li v-for="(cat, idx) in categories" :key="idx" class="px-3">
+                    <a :href="'#cat-' + idx" @click="isMobileOpen = false"
+                       :class="activeCat === idx ? 'bg-indigo-50 text-indigo-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600'"
+                       class="flex items-center px-3 py-2.5 rounded-lg transition-colors group">
+                        <i :class="cat.icon" class="w-6 text-center text-sm opacity-70 group-hover:opacity-100 transition-opacity"
+                           :class="activeCat === idx ? 'opacity-100 text-indigo-600' : ''"></i>
+                        <span class="ml-2 text-sm">{{ cat.name }}</span>
+                        <span class="ml-auto text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-500 transition-colors"
+                              :class="activeCat === idx ? 'bg-indigo-100 text-indigo-500' : ''">{{ cat.siteCount }}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
 
-        <!-- 子分类模块 -->
-        <div v-for="(sub, subIdx) in cat.subcategories" :key="subIdx" class="mb-8 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-          <h3 class="text-base font-bold text-gray-700 mb-5 flex items-center">
-            <span class="w-1.5 h-4 bg-indigo-500 rounded-full mr-2"></span>
-            {{ sub.name }}
-          </h3>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-            <a v-for="(site, sIdx) in sub.sites" :key="sIdx" :href="site.url" target="_blank"
-               class="nav-card bg-gray-50/50 hover:bg-white rounded-xl p-3 border border-gray-100 flex items-center gap-3 group"
-               :title="site.desc || site.name">
-              <!-- 站点图标 (提取首字母生成) -->
-              <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm transition-transform group-hover:scale-105"
-                   :style="{ backgroundColor: getColorFromName(site.name) }">
-                {{ getInitial(site.name) }}
-              </div>
-              <!-- 站点信息 -->
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-1.5 mb-0.5">
-                  <h4 class="text-sm font-bold text-gray-800 truncate group-hover:text-indigo-600 transition-colors">
-                    {{ site.name }}
-                  </h4>
-                  <span v-if="site.hot" class="text-xs text-red-500 shrink-0" title="热门">{{ site.hot }}</span>
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <!-- 搜索栏：始终固定在视口顶部 -->
+        <header class="h-16 bg-white/95 backdrop-blur-sm shadow-sm flex items-center px-4 md:px-8 z-30 shrink-0 sticky top-0">
+            <button @click="isMobileOpen = true" class="md:hidden text-gray-600 mr-4 hover:text-indigo-600 transition-colors">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+            <div class="flex-1 max-w-2xl relative">
+                <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input v-model="searchQuery" type="text" placeholder="探索 X 乐园 海量资源..."
+                       class="w-full bg-gray-100/80 border border-transparent focus:bg-white focus:border-indigo-300 rounded-full py-2 pl-11 pr-4 text-sm outline-none transition-all shadow-inner placeholder-gray-400">
+            </div>
+        </header>
+
+        <!-- 主内容区：移除顶部内边距，保留左右和底部内边距 -->
+        <main class="flex-1 overflow-y-auto px-4 md:px-8 pb-4 md:pb-8 scroll-smooth" @scroll="handleScroll" ref="mainContent">
+            <div v-if="filteredCategories.length === 0" class="flex flex-col items-center justify-center h-full text-gray-400">
+                <i class="fa-solid fa-box-open text-6xl mb-4 text-gray-300"></i>
+                <p class="text-lg">未找到匹配的资源，请换个关键词试试</p>
+            </div>
+
+            <div v-for="(cat, catIdx) in filteredCategories" :key="catIdx" :id="'cat-'+catIdx" 
+                 class="mb-16 scroll-mt-28 relative" :class="{ 'mt-4 md:mt-8': catIdx === 0 }">
+                <div class="flex items-center mb-4 pl-1">
+                    <i :class="cat.icon" class="text-2xl text-indigo-600 mr-3"></i>
+                    <h2 class="text-2xl font-bold text-gray-800">{{ cat.name }}</h2>
                 </div>
-                <p class="text-xs text-gray-500 line-clamp-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                  {{ site.desc || '直达链接' }}
-                </p>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 底部版权 -->
-      <footer v-if="filteredCategories.length > 0" class="text-center text-gray-400 text-sm py-8 mt-10 border-t border-gray-200 border-dashed">
-        <p>Copyright © 2026 X 乐园. Inspired by 图欧导航.</p>
-      </footer>
-    </main>
-  </div>
 
-  <!-- 引入原本的 data.js (无需修改原文件) -->
-  <script src="data.js"></script>
-  <script>
-    const { createApp } = Vue;
+                <!-- 二级分类切换栏：吸附在滚动容器顶部，紧贴搜索栏下方 -->
+                <div class="sticky top-0 z-20 bg-white/70 backdrop-blur-md py-2 -mx-4 px-4 md:-mx-8 md:px-8 border-b border-gray-200/50 flex gap-2 overflow-x-auto scrollbar-hide mb-6 shadow-sm">
+                    <button v-for="sub in cat.subcategories" :key="sub.name"
+                            @click="setActiveSub(cat.name, sub.name)"
+                            :class="activeSubMap[cat.name] === sub.name ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-indigo-50 hover:text-indigo-600'"
+                            class="px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap border border-transparent">{{ sub.name }}</button>
+                </div>
 
-    createApp({
-      data() {
-        return {
-          searchQuery: '',
-          categories:[],
-          activeCat: 0,
-          isMobileOpen: false,
-          scrollTimeout: null
-        }
-      },
-      computed: {
-        filteredCategories() {
-          if (!this.searchQuery.trim()) return this.categories;
-          const q = this.searchQuery.toLowerCase();
-          return this.categories.map(cat => {
-            const newSubs = cat.subcategories.map(sub => {
-              const matchedSites = sub.sites.filter(site => 
-                site.name.toLowerCase().includes(q) || 
-                (site.desc && site.desc.toLowerCase().includes(q))
-              );
-              return matchedSites.length ? { ...sub, sites: matchedSites } : null;
-            }).filter(Boolean);
-            
-            return newSubs.length ? { ...cat, subcategories: newSubs } : null;
-          }).filter(Boolean);
-        }
-      },
-      methods: {
-        // 生成图标颜色
-        getColorFromName(name) {
-          if(!name) return '#6366f1';
-          let hash = 0;
-          for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-          return `hsl(${Math.abs(hash) % 360}, 65%, 60%)`;
-        },
-        // 获取首个中文或英文字符
-        getInitial(name) {
-          if(!name) return 'X';
-          const match = name.match(/[\u4e00-\u9fa5a-zA-Z]/);
-          return match ? match[0].toUpperCase() : name.charAt(0).toUpperCase();
-        },
-        // 滚动监听 (Scroll Spy)
-        handleScroll() {
-          if (this.scrollTimeout) cancelAnimationFrame(this.scrollTimeout);
-          this.scrollTimeout = requestAnimationFrame(() => {
-            const container = this.$refs.mainContent;
-            if(!container) return;
-            const scrollPos = container.scrollTop + 100; 
-            
-            let currentIdx = 0;
-            for (let i = 0; i < this.filteredCategories.length; i++) {
-              const el = document.getElementById('cat-' + i);
-              if (el && el.offsetTop <= scrollPos) {
-                currentIdx = i;
-              }
+                <div class="card-grid">
+                    <a v-for="(site, sIdx) in getSitesToDisplay(cat)" :key="sIdx" :href="site.url" target="_blank"
+                       class="card-wrapper nav-card bg-white rounded-xl p-3 border border-gray-100 flex items-center gap-3 group">
+                        <div class="site-icon-wrapper">
+                            <img v-if="site.icon" :src="site.icon" alt="" class="w-full h-full object-contain rounded-xl" />
+                            <img v-else :src="getFaviconUrl(site.url)" 
+                                 loading="lazy" decoding="async"
+                                 @error="handleIconError($event, site.url)"
+                                 alt="">
+                            <i class="fa-solid fa-globe fallback-icon" style="display: none;"></i>
+                        </div>
+                        <div class="flex-1 min-w-0 overflow-hidden">
+                            <div class="flex items-center gap-1.5">
+                                <h4 class="text-sm font-bold text-gray-800 truncate group-hover:text-indigo-600 transition-colors">{{ site.name }}</h4>
+                                <span v-if="site.hot" class="text-xs text-red-500 shrink-0" title="热门">{{ site.hot }}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 truncate opacity-80 group-hover:opacity-100 transition-opacity">{{ site.desc || '点击直达站点' }}</p>
+                        </div>
+                        <div class="card-tooltip" v-if="site.desc">{{ site.desc }}</div>
+                    </a>
+                </div>
+            </div>
+
+            <footer v-if="filteredCategories.length > 0" class="text-center text-gray-400 text-sm py-8 mt-10 border-t border-gray-200 border-dashed">
+                <p>Copyright © 2026 X 乐园. Inspired by WebStack.</p>
+            </footer>
+        </main>
+    </div>
+
+    <script src="data-with-icons.js"></script>
+    <script src="data.js"></script>
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    searchQuery: '',
+                    categories: [],
+                    activeCat: 0,
+                    isMobileOpen: false,
+                    scrollTimeout: null,
+                    activeSubMap: {}
+                }
+            },
+            computed: {
+                filteredCategories() {
+                    if (!this.searchQuery.trim()) return this.categories;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.categories.map(cat => {
+                        const newSubs = cat.subcategories.map(sub => {
+                            const matchedSites = sub.sites.filter(site =>
+                                site.name.toLowerCase().includes(q) ||
+                                (site.desc && site.desc.toLowerCase().includes(q))
+                            );
+                            return matchedSites.length ? { ...sub, sites: matchedSites } : null;
+                        }).filter(Boolean);
+                        return newSubs.length ? { ...cat, subcategories: newSubs } : null;
+                    }).filter(Boolean);
+                }
+            },
+            methods: {
+                getFaviconUrl(url) {
+                    if (!url) return '';
+                    try {
+                        const fullUrl = url.startsWith('http') ? url : 'https://' + url;
+                        const hostname = new URL(fullUrl).hostname;
+                        return `https://favicon.im/${hostname}?size=32`;
+                    } catch (e) {
+                        return '';
+                    }
+                },
+                getBackupFaviconUrl(url) {
+                    if (!url) return '';
+                    try {
+                        const fullUrl = url.startsWith('http') ? url : 'https://' + url;
+                        const hostname = new URL(fullUrl).hostname;
+                        return `https://api.iowen.cn/favicon/${hostname}`;
+                    } catch (e) {
+                        return '';
+                    }
+                },
+                handleIconError(event, siteUrl) {
+                    const img = event.target;
+                    const wrapper = img.parentElement;
+                    const fallback = wrapper.querySelector('.fallback-icon');
+                    const retry = parseInt(img.dataset.retry, 10) || 0;
+                    if (retry === 0) {
+                        img.dataset.retry = '1';
+                        img.src = this.getBackupFaviconUrl(siteUrl);
+                    } else {
+                        if (img) img.style.display = 'none';
+                        if (fallback) fallback.style.display = '';
+                    }
+                },
+                setActiveSub(catName, subName) {
+                    this.activeSubMap[catName] = subName;
+                },
+                getSitesToDisplay(cat) {
+                    const activeSub = this.activeSubMap[cat.name];
+                    if (!activeSub) {
+                        const firstSub = cat.subcategories[0];
+                        if (firstSub) {
+                            this.activeSubMap[cat.name] = firstSub.name;
+                            return firstSub.sites;
+                        }
+                        return [];
+                    }
+                    const targetSub = cat.subcategories.find(sub => sub.name === activeSub);
+                    return targetSub ? targetSub.sites : [];
+                },
+                handleScroll() {
+                    if (this.scrollTimeout) cancelAnimationFrame(this.scrollTimeout);
+                    this.scrollTimeout = requestAnimationFrame(() => {
+                        const container = this.$refs.mainContent;
+                        if (!container) return;
+                        const scrollPos = container.scrollTop + 180;
+                        let currentIdx = 0;
+                        for (let i = 0; i < this.filteredCategories.length; i++) {
+                            const el = document.getElementById('cat-' + i);
+                            if (el && el.offsetTop <= scrollPos) currentIdx = i;
+                        }
+                        this.activeCat = currentIdx;
+                    });
+                },
+                restructureData(originalData) {
+                    const layoutMapping = [
+                        { name: "AI 人工智能", icon: "fa-solid fa-microchip", subs: ["AI 对话", "AI 绘画", "AI 写作", "AI 翻译", "AI 视频", "AI 办公", "AI 开发", "AI 搜索", "AI 综合平台", "其他AI"] },
+                        { name: "在线工具", icon: "fa-solid fa-toolbox", subs: ["在线工具", "文件处理", "浏览器增强"] },
+                        { name: "极客与系统", icon: "fa-solid fa-laptop-code", subs: ["系统工具", "开源项目", "命令行工具", "网络安全", "极客文化", "API/数据", "模拟器/虚拟机", "其他代码", "开发辅助"] },
+                        { name: "设计与视觉", icon: "fa-solid fa-palette", subs: ["设计素材", "图形/插画", "UI/动效", "3D/建模", "图标/素材", "生成艺术", "设计工具", "其他设计", "建筑设计"] },
+                        { name: "游戏竞技", icon: "fa-solid fa-gamepad", subs: ["休闲益智", "对战竞技", "体育竞速", "策略模拟", "动作冒险", "文字剧情", "多人在线", "怀旧经典", "音乐节奏", "其它游戏"] },
+                        { name: "搜索与资源", icon: "fa-solid fa-search", subs: ["网盘搜索", "资源搜索"] },
+                        { name: "影视与短视频", icon: "fa-solid fa-film", subs: ["在线影视", "短视频", "视频工具", "字幕/配音", "播放器", "图片/壁纸"] },
+                        { name: "音乐与电台", icon: "fa-solid fa-music", subs: ["音乐下载", "直播/电台"] },
+                        { name: "考试与教育", icon: "fa-solid fa-graduation-cap", subs: ["考试考证", "学习辅助", "语言学习", "公开课/视频", "技能教程", "百科知识", "学术论文"] },
+                        { name: "电子书与文档", icon: "fa-solid fa-book-open", subs: ["电子书/文档"] },
+                        { name: "探索与发现", icon: "fa-solid fa-globe", subs: ["地图卫星", "博物馆/艺术", "自然科普", "历史人文", "数据可视化", "冷知识/趣闻", "街景/全景", "其他探索", "其他学习"] },
+                        { name: "摸鱼与娱乐", icon: "fa-solid fa-face-grin-squint-tears", subs: ["摸鱼伪装", "恶搞图片", "无聊网站", "吐槽发泄", "奇葩新闻", "文字游戏", "备用2", "减压小游戏", "搞笑段子", "其他休闲", "其他视听"] },
+                        { name: "综合工具箱", icon: "fa-solid fa-screwdriver-wrench", subs: ["其他工具"] },
+                        { name: "萌宠与生活", icon: "fa-solid fa-paw", subs: ["萌宠动物", "生活服务"] }
+                    ];
+                    const allSubsMap = {};
+                    originalData.forEach(cat => {
+                        cat.subcategories.forEach(sub => {
+                            if (!allSubsMap[sub.name]) allSubsMap[sub.name] = [];
+                            allSubsMap[sub.name].push(...sub.sites);
+                        });
+                    });
+                    const newData = [];
+                    layoutMapping.forEach(config => {
+                        const newCat = { name: config.name, icon: config.icon, subcategories: [], siteCount: 0 };
+                        config.subs.forEach(subName => {
+                            if (allSubsMap[subName] && allSubsMap[subName].length > 0) {
+                                newCat.subcategories.push({ name: subName, sites: allSubsMap[subName] });
+                                newCat.siteCount += allSubsMap[subName].length;
+                            }
+                        });
+                        if (newCat.subcategories.length > 0) newData.push(newCat);
+                    });
+                    const usedSubs = new Set(layoutMapping.flatMap(c => c.subs));
+                    const leftOvers = Object.keys(allSubsMap).filter(name => !usedSubs.has(name));
+                    if (leftOvers.length > 0) {
+                        const otherCat = { name: "其他未分类", icon: "fa-solid fa-box", subcategories: [], siteCount: 0 };
+                        leftOvers.forEach(subName => {
+                            otherCat.subcategories.push({ name: subName, sites: allSubsMap[subName] });
+                            otherCat.siteCount += allSubsMap[subName].length;
+                        });
+                        newData.push(otherCat);
+                    }
+                    return newData;
+                }
+            },
+            mounted() {
+                const dataSource = (typeof SITE_DATA_ICONS !== 'undefined') ? SITE_DATA_ICONS : SITE_DATA;
+                if (typeof dataSource !== 'undefined') {
+                    this.categories = this.restructureData(dataSource);
+                    this.categories.forEach(cat => {
+                        if (cat.subcategories && cat.subcategories.length > 0) {
+                            this.activeSubMap[cat.name] = cat.subcategories[0].name;
+                        }
+                    });
+                }
             }
-            this.activeCat = currentIdx;
-          });
-        },
-        // 核心重组算法：将原先冗长的大类重新聚合成不超过300个站点的精确类别
-        restructureData(originalData) {
-          // 定义图欧导航风格的全新14个一级分类及匹配规则
-          const layoutMapping =[
-            { name: "🎮 游戏竞技", icon: "fa-solid fa-gamepad", subs:["休闲益智", "对战竞技", "体育竞速", "策略模拟", "动作冒险", "文字剧情", "多人在线", "怀旧经典", "音乐节奏", "其它游戏"] },
-            { name: "🤖 AI 人工智能", icon: "fa-solid fa-microchip", subs:["AI 对话", "AI 绘画", "AI 写作", "AI 翻译", "AI 视频", "AI 办公", "AI 开发", "AI 搜索", "AI 综合平台", "其他AI"] },
-            { name: "🧰 在线工具", icon: "fa-solid fa-toolbox", subs:["在线工具", "文件处理", "浏览器增强"] },
-            { name: "💻 极客与系统", icon: "fa-solid fa-laptop-code", subs:["系统工具", "开源项目", "命令行工具", "网络安全", "极客文化", "API/数据", "模拟器/虚拟机", "其他代码", "开发辅助"] },
-            { name: "🎨 设计与视觉", icon: "fa-solid fa-palette", subs:["设计素材", "图形/插画", "UI/动效", "3D/建模", "图标/素材", "生成艺术", "设计工具", "其他设计", "建筑设计"] },
-            { name: "🔍 搜索与资源", icon: "fa-solid fa-search", subs:["网盘搜索", "资源搜索"] },
-            { name: "🎬 影视与短视频", icon: "fa-solid fa-film", subs:["在线影视", "短视频", "视频工具", "字幕/配音", "播放器", "图片/壁纸"] },
-            { name: "🎵 音乐与电台", icon: "fa-solid fa-music", subs: ["音乐下载", "直播/电台"] },
-            { name: "📚 考试与教育", icon: "fa-solid fa-graduation-cap", subs:["考试考证", "学习辅助", "语言学习", "公开课/视频", "技能教程", "百科知识", "学术论文"] },
-            { name: "📖 电子书与文档", icon: "fa-solid fa-book-open", subs: ["电子书/文档"] },
-            { name: "🌍 探索与发现", icon: "fa-solid fa-globe", subs:["地图卫星", "博物馆/艺术", "自然科普", "历史人文", "数据可视化", "冷知识/趣闻", "街景/全景", "其他探索", "其他学习"] },
-            { name: "🕹️ 摸鱼与娱乐", icon: "fa-solid fa-face-grin-squint-tears", subs:["摸鱼伪装", "恶搞图片", "无聊网站", "吐槽发泄", "奇葩新闻", "文字游戏", "备用2", "减压小游戏", "搞笑段子", "其他休闲", "其他视听"] },
-            { name: "🛠️ 综合工具箱", icon: "fa-solid fa-screwdriver-wrench", subs: ["其他工具"] },
-            { name: "🐶 萌宠与生活", icon: "fa-solid fa-paw", subs: ["萌宠动物", "生活服务"] }
-          ];
-
-          // 第一步：把用户所有的次级目录平铺到一个字典中
-          const allSubsMap = {};
-          originalData.forEach(cat => {
-            cat.subcategories.forEach(sub => {
-              if (!allSubsMap[sub.name]) allSubsMap[sub.name] = [];
-              allSubsMap[sub.name].push(...sub.sites);
-            });
-          });
-
-          // 第二步：根据新定义的 mapping 进行重新组装
-          const newData =[];
-          layoutMapping.forEach(config => {
-            const newCat = { 
-              name: config.name, 
-              icon: config.icon, 
-              subcategories:[],
-              siteCount: 0
-            };
-            
-            config.subs.forEach(subName => {
-              if (allSubsMap[subName] && allSubsMap[subName].length > 0) {
-                newCat.subcategories.push({ name: subName, sites: allSubsMap[subName] });
-                newCat.siteCount += allSubsMap[subName].length;
-              }
-            });
-
-            if (newCat.subcategories.length > 0) {
-              newData.push(newCat);
-            }
-          });
-
-          // 第三步：拾遗补漏（如果用户数据里有我不认识的分类，统一装进"未分类"）
-          const usedSubs = new Set(layoutMapping.flatMap(c => c.subs));
-          const leftOvers = Object.keys(allSubsMap).filter(name => !usedSubs.has(name));
-          
-          if (leftOvers.length > 0) {
-            const otherCat = { name: "📦 其他未分类", icon: "fa-solid fa-box", subcategories:[], siteCount: 0 };
-            leftOvers.forEach(subName => {
-              otherCat.subcategories.push({ name: subName, sites: allSubsMap[subName] });
-              otherCat.siteCount += allSubsMap[subName].length;
-            });
-            newData.push(otherCat);
-          }
-
-          return newData;
-        }
-      },
-      mounted() {
-        // 在网页加载时读取旧版 data.js 的数据，执行实时重组
-        if (typeof SITE_DATA !== 'undefined') {
-          this.categories = this.restructureData(SITE_DATA);
-        }
-      }
-    }).mount('#app');
-  </script>
+        }).mount('#app');
+    </script>
 </body>
 </html>
